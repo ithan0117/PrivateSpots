@@ -3,12 +3,30 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/spot_nav_graph"
-    app:startDestination="@id/spotDetailDisplayFragment">
+    app:startDestination="@id/spotListFragment">
 
 
     <fragment
         android:id="@+id/spotDetailDisplayFragment"
         android:name="idv.william.privatespots.fragment.SpotDetailDisplayFragment"
         android:label="fragment_spot_detail_display"
-        tools:layout="@layout/fragment_spot_detail_display" />
+        tools:layout="@layout/fragment_spot_detail_display" >
+        <action
+            android:id="@+id/actionDetailDisplayToDetailEdit"
+            app:destination="@id/spotDetailEditFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/spotDetailEditFragment"
+        android:name="idv.william.privatespots.fragment.SpotDetailEditFragment"
+        android:label="fragment_spot_detail_edit"
+        tools:layout="@layout/fragment_spot_detail_edit" />
+    <fragment
+        android:id="@+id/spotListFragment"
+        android:name="idv.william.privatespots.fragment.SpotListFragment"
+        android:label="fragment_spot_list"
+        tools:layout="@layout/fragment_spot_list" >
+        <action
+            android:id="@+id/actionListToDetailDisplay"
+            app:destination="@id/spotDetailDisplayFragment" />
+    </fragment>
 </navigation>

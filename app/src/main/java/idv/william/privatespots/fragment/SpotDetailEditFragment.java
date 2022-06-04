@@ -35,14 +35,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import idv.william.privatespots.MainActivity;
 import idv.william.privatespots.R;
@@ -86,9 +82,9 @@ public class SpotDetailEditFragment extends Fragment {
 	}
 
 	private void findViews(View view) {
-		ibSave = view.findViewById(R.id.ibSave);
+		ibSave = view.findViewById(R.id.ibEdit);
 		etTitle = view.findViewById(R.id.etTitle);
-		etDesc = view.findViewById(R.id.etDesc);
+		etDesc = view.findViewById(R.id.tvDesc);
 		rvImages = view.findViewById(R.id.rvImages);
 		tvCreatedDate = view.findViewById(R.id.tvCreatedDate);
 	}
@@ -184,7 +180,7 @@ public class SpotDetailEditFragment extends Fragment {
 		@NonNull
 		@Override
 		public SpotViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-			View itemView = LayoutInflater.from(context).inflate(R.layout.image_item_view_noimage, parent, false);
+			View itemView = LayoutInflater.from(context).inflate(R.layout.item_view_image, parent, false);
 			return new SpotViewHolder(itemView);
 		}
 
