@@ -3,23 +3,24 @@ package idv.william.privatespots.bean;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Map;
 
 public class Spot implements Serializable {
 	private Integer id;
 	private String title;
-	private List<String> images;
-	private String content;
-	private Timestamp createdDateTime;
+	private Map<String, String> images;
+	private String desc;
+	private String createdDate;
 
 	public Spot() {
 	}
 
-	public Spot(Integer id, String title, List<String> images, String content, Timestamp createdDateTime) {
+	public Spot(Integer id, String title, Map<String, String> images, String desc, String createdDate) {
 		this.id = id;
 		this.title = title;
 		this.images = images;
-		this.content = content;
-		this.createdDateTime = createdDateTime;
+		this.desc = desc;
+		this.createdDate = createdDate;
 	}
 
 	public Integer getId() {
@@ -38,27 +39,27 @@ public class Spot implements Serializable {
 		this.title = title;
 	}
 
-	public List<String> getImages() {
+	public Map<String, String> getImages() {
 		return images;
 	}
 
-	public void setImages(List<String> images) {
+	public void setImages(Map<String, String> images) {
 		this.images = images;
 	}
 
-	public String getContent() {
-		return content;
+	public String getDesc() {
+		return desc;
 	}
 
-	public void setContent(String content) {
-		this.content = content;
+	public void setDesc(String desc) {
+		this.desc = desc;
 	}
 
-	public Timestamp getCreatedDateTime() {
-		return createdDateTime;
+	public String getCreatedDate() {
+		return createdDate;
 	}
 
-	public void setCreatedDateTime(Timestamp createdDateTime) {
-		this.createdDateTime = createdDateTime;
+	public void setCreatedDate(String createdDate) {
+		this.createdDate = createdDate;
 	}
 }

@@ -9,6 +9,9 @@
     <color name="white">#FFFFFFFF</color>
     
     <color name="colorYellowGreen1">#FFD0DB54</color>
-    <color name="colorYellowGreen2">#80D0DB54</color>
-    <color name="colorNearlyWhite">#FFFAF8F6</color>
+    <color name="colorYellowGreen2">#FF8F9368</color>
+
+    <color name="colorNearlyBack1">#7B7B7B</color>
+    <color name="colorNearlyWhite1">#FAF8F6</color>
+    <color name="colorNearlyWhite2">#F6F6F6</color>
 </resources>
