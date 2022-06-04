@@ -38,6 +38,7 @@
         <entry key="app/src/main/res/layout/image_item_view_noimage.xml" value="0.375" />
         <entry key="app/src/main/res/layout/image_item_view_spot.xml" value="0.45" />
         <entry key="app/src/main/res/layout/item_view.xml" value="0.16574074074074074" />
+        <entry key="app/src/main/res/layout/item_view_image.xml" value="0.16574074074074074" />
         <entry key="app/src/main/res/xml/file_paths.xml" value="0.1" />
       </map>
     </option>

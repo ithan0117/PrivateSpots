@@ -28,5 +28,8 @@
         <action
             android:id="@+id/actionListToDetailDisplay"
             app:destination="@id/spotDetailDisplayFragment" />
+        <action
+            android:id="@+id/actionListToDetailEdit"
+            app:destination="@id/spotDetailEditFragment" />
     </fragment>
 </navigation>

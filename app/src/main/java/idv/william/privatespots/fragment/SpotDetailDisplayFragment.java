@@ -1,5 +1,8 @@
 package idv.william.privatespots.fragment;
 
+import static idv.william.privatespots.common.Constant.KEY_ACTION;
+import static idv.william.privatespots.common.Constant.KEY_SPOT;
+
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -24,11 +27,11 @@ import android.widget.TextView;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Calendar;
 import java.util.Map;
 
 import idv.william.privatespots.R;
 import idv.william.privatespots.bean.Spot;
+import idv.william.privatespots.common.Action;
 
 public class SpotDetailDisplayFragment extends Fragment {
 	private static final String TAG = "TAG_DetailDisplay";
@@ -81,7 +84,8 @@ public class SpotDetailDisplayFragment extends Fragment {
 	private void handleIbEdit() {
 		ibEdit.setOnClickListener(view -> {
 			Bundle bundle = new Bundle();
-			bundle.putSerializable("SPOT", spot);
+			bundle.putSerializable(KEY_SPOT, spot);
+			bundle.putSerializable(KEY_ACTION, Action.EDIT);
 			Navigation.findNavController(view).navigate(R.id.actionDetailDisplayToDetailEdit, bundle);
 		});
 	}

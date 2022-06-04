@@ -15,6 +15,13 @@ public class Spot implements Serializable {
 	public Spot() {
 	}
 
+	public Spot(String title, Map<String, String> images, String desc, String createdDate) {
+		this.title = title;
+		this.images = images;
+		this.desc = desc;
+		this.createdDate = createdDate;
+	}
+
 	public Spot(Integer id, String title, Map<String, String> images, String desc, String createdDate) {
 		this.id = id;
 		this.title = title;

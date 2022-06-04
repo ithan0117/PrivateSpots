@@ -1,6 +1,8 @@
 package idv.william.privatespots.fragment;
 
-import static android.content.Context.MODE_PRIVATE;
+import static idv.william.privatespots.common.Constant.FILENAME;
+import static idv.william.privatespots.util.InternalStorageUtil.read;
+import static idv.william.privatespots.util.InternalStorageUtil.save;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -29,23 +31,26 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 
 import idv.william.privatespots.MainActivity;
 import idv.william.privatespots.R;
 import idv.william.privatespots.bean.Spot;
+import idv.william.privatespots.common.Action;
 
 public class SpotDetailEditFragment extends Fragment {
 	private static final String TAG = "TAG_EditFragment";
+	private Action action;
+	private Spot spot;
 	private MainActivity activity;
 	private ImageButton ibSave;
 	private EditText etTitle, etDesc;
@@ -56,29 +61,37 @@ public class SpotDetailEditFragment extends Fragment {
 	private ImageView currImageView;
 	private File file;
 	private String currImageTag;
-	private Map<String, String> images;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		activity = (MainActivity) getActivity();
-		adapter = new SpotAdapter(activity);
-		takePicLauncher = activity.registerForActivityResult(new ActivityResultContracts.TakePicture(), isOk -> adapter.afterTakePicture(isOk));
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		Bundle bundle = getArguments();
+		if (bundle != null) {
+			spot = (Spot) bundle.get("SPOT");
+			spot = spot == null ? new Spot() : spot;
+			action = (Action) bundle.get("ACTION");
+		}
 		return inflater.inflate(R.layout.fragment_spot_detail_edit, container, false);
 	}
 
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+		activity = (MainActivity) getActivity();
+		adapter = new SpotAdapter(activity);
+		if (action == Action.EDIT && spot != null) {
+			adapter.images = spot.getImages();
+		}
+		takePicLauncher = registerForActivityResult(new ActivityResultContracts.TakePicture(), isOk -> adapter.afterTakePicture(isOk));
 		findViews(view);
+		handleIbSave();
+		handleEditTexts();
 		handleRcImages();
 		handleTvCreatedDate();
-		handleIbSave();
-		showSpot();
 	}
 
 	private void findViews(View view) {
@@ -87,27 +100,6 @@ public class SpotDetailEditFragment extends Fragment {
 		etDesc = view.findViewById(R.id.tvDesc);
 		rvImages = view.findViewById(R.id.rvImages);
 		tvCreatedDate = view.findViewById(R.id.tvCreatedDate);
-	}
-
-	private void handleRcImages() {
-		rvImages.setAdapter(new SpotAdapter(activity));
-		rvImages.setLayoutManager(new GridLayoutManager(activity, 2));
-	}
-
-	private void handleTvCreatedDate() {
-		Calendar calendar = Calendar.getInstance();
-		final int year = calendar.get(Calendar.YEAR);
-		final int month = calendar.get(Calendar.MONTH) + 1;
-		final int day = calendar.get(Calendar.DAY_OF_MONTH);
-		tvCreatedDate.setText(
-				new StringBuilder()
-						.append(year)
-						.append("年")
-						.append(month)
-						.append("月")
-						.append(day)
-						.append("日")
-		);
 	}
 
 	private void handleIbSave() {
@@ -122,40 +114,74 @@ public class SpotDetailEditFragment extends Fragment {
 				etDesc.setError("請輸入描述");
 				return;
 			}
-			final String createdDate = String.valueOf(tvCreatedDate.getText());
-			final Spot spot = new Spot(1, title, images, desc, createdDate);
-			try (
-					FileOutputStream fos = activity.openFileOutput("SPOTS", MODE_PRIVATE);
-					ObjectOutputStream oos = new ObjectOutputStream(fos)
-			) {
-				oos.writeObject(spot);
-				Toast.makeText(activity, "存檔成功", Toast.LENGTH_SHORT).show();
-			} catch (IOException e) {
-				Log.e(TAG, e.toString());
+			List<Spot> spots = read(activity, FILENAME);
+			if (spots == null) {
+				spots = new ArrayList<>();
 			}
+			spot.setTitle(title);
+			spot.setImages(adapter.images);
+			spot.setDesc(desc);
+			spot.setCreatedDate(String.valueOf(tvCreatedDate.getText()));
+			switch (action) {
+				case ADD:
+					spot.setId(spots.size());
+					spots.add(spot);
+					break;
+				case EDIT:
+					for (int index = 0; index < spots.size(); index++) {
+						final Spot tmp = spots.get(index);
+						if (Objects.equals(tmp.getId(), spot.getId())) {
+							spots.set(index, spot);
+							break;
+						}
+					}
+					break;
+			}
+			final boolean result = save(activity, FILENAME, spots);
+			Toast.makeText(activity, result ? "存檔成功" : "存檔失敗", Toast.LENGTH_SHORT).show();
 		});
 	}
 
-	private void showSpot() {
-		try (
-				FileInputStream fis = activity.openFileInput("SPOTS");
-				ObjectInputStream ois = new ObjectInputStream(fis);
-		) {
-			final Spot spot = (Spot) ois.readObject();
-			if (spot == null) {
-				return;
-			}
+	private void handleEditTexts() {
+		if (action == Action.EDIT && spot != null) {
 			etTitle.setText(spot.getTitle());
 			etDesc.setText(spot.getDesc());
-			tvCreatedDate.setText(spot.getCreatedDate());
-			images = spot.getImages();
-		} catch (IOException | ClassNotFoundException e) {
-			Log.e(TAG, e.toString());
+		}
+	}
+
+	private void handleRcImages() {
+		rvImages.setAdapter(adapter);
+		rvImages.setLayoutManager(new GridLayoutManager(activity, 2));
+	}
+
+	private void handleTvCreatedDate() {
+		switch (action) {
+			case ADD:
+				Calendar calendar = Calendar.getInstance();
+				final int year = calendar.get(Calendar.YEAR);
+				final int month = calendar.get(Calendar.MONTH) + 1;
+				final int day = calendar.get(Calendar.DAY_OF_MONTH);
+				tvCreatedDate.setText(
+						new StringBuilder()
+								.append(year)
+								.append("年")
+								.append(month)
+								.append("月")
+								.append(day)
+								.append("日")
+				);
+				break;
+			case EDIT:
+				if (spot != null) {
+					tvCreatedDate.setText(spot.getCreatedDate());
+				}
+				break;
 		}
 	}
 
 	private class SpotAdapter extends RecyclerView.Adapter<SpotAdapter.SpotViewHolder> {
 		Context context;
+		Map<String, String> images;
 		int no;
 
 		public SpotAdapter(Context context) {
@@ -198,7 +224,7 @@ public class SpotDetailEditFragment extends Fragment {
 				}
 			});
 
-			if (images == null) {
+			if (action == Action.ADD || images == null) {
 				return;
 			}
 			String imageStr = images.get("image" + position);
