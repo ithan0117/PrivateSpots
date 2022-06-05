@@ -24,6 +24,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
@@ -148,6 +149,16 @@ public class SpotDetailDisplayFragment extends Fragment {
 			}
 			holder.imageView.setBackground(null);
 			holder.imageView.setImageBitmap(bitmap);
+
+			holder.imageView.setOnClickListener(view -> {
+				ImageView imageView = new ImageView(context);
+				imageView.setImageDrawable(holder.imageView.getDrawable());
+				Toast toast = new Toast(context);
+				toast.setView(imageView);
+				toast.setDuration(Toast.LENGTH_SHORT);
+				toast.show();
+
+			});
 		}
 	}
 }

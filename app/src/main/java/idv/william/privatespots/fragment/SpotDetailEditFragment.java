@@ -1,13 +1,17 @@
 package idv.william.privatespots.fragment;
 
+import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static idv.william.privatespots.common.Constant.FILENAME;
 import static idv.william.privatespots.util.InternalStorageUtil.read;
 import static idv.william.privatespots.util.InternalStorageUtil.save;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageDecoder;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -25,10 +29,19 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.tasks.Task;
 
 import java.io.File;
 import java.io.IOException;
@@ -61,6 +74,13 @@ public class SpotDetailEditFragment extends Fragment {
 	private ImageView currImageView;
 	private File file;
 	private String currImageTag;
+	private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(
+			new ActivityResultContracts.RequestPermission(),
+			result -> {
+				if (result) {
+					showMyLocation();
+				}
+			});
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -92,6 +112,12 @@ public class SpotDetailEditFragment extends Fragment {
 		handleEditTexts();
 		handleRcImages();
 		handleTvCreatedDate();
+	}
+
+	@Override
+	public void onStart() {
+		super.onStart();
+		requestPermissionLauncher.launch(ACCESS_FINE_LOCATION);
 	}
 
 	private void findViews(View view) {
@@ -275,5 +301,22 @@ public class SpotDetailEditFragment extends Fragment {
 			File storageDir = activity.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
 			return File.createTempFile(imageFileName, ".jpg", storageDir);
 		}
+	}
+
+	private void showMyLocation() {
+		if (ActivityCompat.checkSelfPermission(activity, ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+				&& ActivityCompat.checkSelfPermission(activity, ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+			return;
+		}
+		FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(activity);
+		Task<Location> task = fusedLocationClient.getLastLocation();
+		task.addOnSuccessListener(location -> {
+			if (location != null) {
+				final double lat = location.getLatitude();
+				final double lng = location.getLongitude();
+				spot.setLat(lat);
+				spot.setLng(lng);
+			}
+		});
 	}
 }

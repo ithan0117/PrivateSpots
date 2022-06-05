@@ -11,6 +11,8 @@ public class Spot implements Serializable {
 	private Map<String, String> images;
 	private String desc;
 	private String createdDate;
+	private double lat;
+	private double lng;
 
 	public Spot() {
 	}
@@ -28,6 +30,16 @@ public class Spot implements Serializable {
 		this.images = images;
 		this.desc = desc;
 		this.createdDate = createdDate;
+	}
+
+	public Spot(Integer id, String title, Map<String, String> images, String desc, String createdDate, double lat, double lng) {
+		this.id = id;
+		this.title = title;
+		this.images = images;
+		this.desc = desc;
+		this.createdDate = createdDate;
+		this.lat = lat;
+		this.lng = lng;
 	}
 
 	public Integer getId() {
@@ -68,5 +80,21 @@ public class Spot implements Serializable {
 
 	public void setCreatedDate(String createdDate) {
 		this.createdDate = createdDate;
+	}
+
+	public double getLat() {
+		return lat;
+	}
+
+	public void setLat(double lat) {
+		this.lat = lat;
+	}
+
+	public double getLng() {
+		return lng;
+	}
+
+	public void setLng(double lng) {
+		this.lng = lng;
 	}
 }

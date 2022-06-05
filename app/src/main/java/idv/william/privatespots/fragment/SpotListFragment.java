@@ -21,6 +21,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -59,6 +60,10 @@ public class SpotListFragment extends Fragment {
 		findViews(view);
 		handleIbSave();
 		handleRvImages();
+		// TODO just for testing
+		view.findViewById(R.id.cvTitle).setOnClickListener(v -> {
+			Navigation.findNavController(v).navigate(R.id.spotMapFragment);
+		});
 	}
 
 	private void findViews(View view) {

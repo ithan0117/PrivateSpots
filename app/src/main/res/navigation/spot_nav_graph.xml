@@ -32,4 +32,9 @@
             android:id="@+id/actionListToDetailEdit"
             app:destination="@id/spotDetailEditFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/spotMapFragment"
+        android:name="idv.william.privatespots.fragment.SpotMapFragment"
+        android:label="fragment_spot_map"
+        tools:layout="@layout/fragment_spot_map" />
 </navigation>
