@@ -9,14 +9,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageDecoder;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.navigation.Navigation;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +17,14 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,6 +37,8 @@ import idv.william.privatespots.common.Action;
 public class SpotDetailDisplayFragment extends Fragment {
 	private static final String TAG = "TAG_DetailDisplay";
 	private Activity activity;
+	private ImageView ivFullScreen;
+	private ConstraintLayout constraintLayout;
 	private TextView tvTitle, tvDesc, tvCreatedDate;
 	private ImageButton ibEdit;
 	private RecyclerView rvImages;
@@ -61,17 +63,27 @@ public class SpotDetailDisplayFragment extends Fragment {
 		super.onViewCreated(view, savedInstanceState);
 		activity = getActivity();
 		findViews(view);
+		handleIvFullScreen();
 		handleTextViews();
 		handleIbEdit();
 		handleRvImages();
 	}
 
 	private void findViews(View view) {
+		ivFullScreen = view.findViewById(R.id.ivFullScreen);
+		constraintLayout = view.findViewById(R.id.constraintLayout);
 		tvTitle = view.findViewById(R.id.tvTitle);
 		ibEdit = view.findViewById(R.id.ibEdit);
 		rvImages = view.findViewById(R.id.rvImages);
 		tvDesc = view.findViewById(R.id.tvDesc);
 		tvCreatedDate = view.findViewById(R.id.tvCreatedDate);
+	}
+
+	private void handleIvFullScreen() {
+		ivFullScreen.setOnClickListener(view -> {
+			ivFullScreen.setVisibility(View.INVISIBLE);
+			constraintLayout.setVisibility(View.VISIBLE);
+		});
 	}
 
 	private void handleTextViews() {
@@ -96,7 +108,7 @@ public class SpotDetailDisplayFragment extends Fragment {
 		rvImages.setLayoutManager(new GridLayoutManager(activity, 2));
 	}
 
-	private static class SpotAdapter extends RecyclerView.Adapter<SpotAdapter.SpotViewHolder> {
+	private class SpotAdapter extends RecyclerView.Adapter<SpotAdapter.SpotViewHolder> {
 		Context context;
 		Map<String, String> images;
 
@@ -105,7 +117,7 @@ public class SpotDetailDisplayFragment extends Fragment {
 			this.images = images;
 		}
 
-		private static class SpotViewHolder extends RecyclerView.ViewHolder {
+		private class SpotViewHolder extends RecyclerView.ViewHolder {
 			ImageView imageView;
 
 			public SpotViewHolder(@NonNull View itemView) {
@@ -151,12 +163,9 @@ public class SpotDetailDisplayFragment extends Fragment {
 			holder.imageView.setImageBitmap(bitmap);
 
 			holder.imageView.setOnClickListener(view -> {
-				ImageView imageView = new ImageView(context);
-				imageView.setImageDrawable(holder.imageView.getDrawable());
-				Toast toast = new Toast(context);
-				toast.setView(imageView);
-				toast.setDuration(Toast.LENGTH_SHORT);
-				toast.show();
+				ivFullScreen.setImageDrawable(((ImageView) view).getDrawable());
+				constraintLayout.setVisibility(View.INVISIBLE);
+				ivFullScreen.setVisibility(View.VISIBLE);
 			});
 		}
 	}

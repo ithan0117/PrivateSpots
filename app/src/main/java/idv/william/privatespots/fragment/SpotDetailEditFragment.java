@@ -33,6 +33,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
@@ -62,7 +63,6 @@ import idv.william.privatespots.common.Action;
 
 public class SpotDetailEditFragment extends Fragment {
 	private static final String TAG = "TAG_EditFragment";
-	private static final int REQUEST_CODE_CROP_IMAGE = 1;
 	private Action action;
 	private Spot spot;
 	private MainActivity activity;
@@ -127,7 +127,7 @@ public class SpotDetailEditFragment extends Fragment {
 		requestPermissionLauncher.launch(ACCESS_FINE_LOCATION);
 	}
 
-	private void findViews(View view) {
+	private void findViews(@NonNull View view) {
 		ibSave = view.findViewById(R.id.ibEdit);
 		etTitle = view.findViewById(R.id.etTitle);
 		etDesc = view.findViewById(R.id.tvDesc);
@@ -239,7 +239,7 @@ public class SpotDetailEditFragment extends Fragment {
 						if (images == null) {
 							images = new HashMap<>();
 						}
-						images.put(currImageTag, file.getAbsolutePath());
+						images.put(currImageTag, resultUri.getPath());
 					} catch (IOException e) {
 						Log.e(TAG, e.toString());
 					}
