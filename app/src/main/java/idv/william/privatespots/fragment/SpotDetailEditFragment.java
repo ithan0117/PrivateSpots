@@ -2,17 +2,21 @@ package idv.william.privatespots.fragment;
 
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import static android.app.Activity.RESULT_OK;
 import static idv.william.privatespots.common.Constant.FILENAME;
 import static idv.william.privatespots.util.InternalStorageUtil.read;
 import static idv.william.privatespots.util.InternalStorageUtil.save;
 
+import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageDecoder;
 import android.location.Location;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -37,11 +41,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdate;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.model.CameraPosition;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.Task;
+import com.yalantis.ucrop.UCrop;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,7 +54,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
 
 import idv.william.privatespots.MainActivity;
 import idv.william.privatespots.R;
@@ -62,9 +62,11 @@ import idv.william.privatespots.common.Action;
 
 public class SpotDetailEditFragment extends Fragment {
 	private static final String TAG = "TAG_EditFragment";
+	private static final int REQUEST_CODE_CROP_IMAGE = 1;
 	private Action action;
 	private Spot spot;
 	private MainActivity activity;
+	private ContentResolver contentResolver;
 	private ImageButton ibSave;
 	private EditText etTitle, etDesc;
 	private RecyclerView rvImages;
@@ -102,11 +104,16 @@ public class SpotDetailEditFragment extends Fragment {
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		activity = (MainActivity) getActivity();
+		contentResolver = activity.getContentResolver();
 		adapter = new SpotAdapter(activity);
 		if (action == Action.EDIT && spot != null) {
 			adapter.images = spot.getImages();
 		}
-		takePicLauncher = registerForActivityResult(new ActivityResultContracts.TakePicture(), isOk -> adapter.afterTakePicture(isOk));
+		takePicLauncher = registerForActivityResult(new ActivityResultContracts.TakePicture(), isOk -> {
+			if (isOk) {
+				adapter.crop();
+			}
+		});
 		findViews(view);
 		handleIbSave();
 		handleEditTexts();
@@ -209,6 +216,35 @@ public class SpotDetailEditFragment extends Fragment {
 		Context context;
 		Map<String, String> images;
 		int no;
+		ActivityResultLauncher<Intent> cropPicLauncher = registerForActivityResult(
+				new ActivityResultContracts.StartActivityForResult(), activityResult -> {
+					if (activityResult == null || activityResult.getResultCode() != RESULT_OK) {
+						return;
+					}
+					try {
+						Intent intent = activityResult.getData();
+						if (intent == null) {
+							return;
+						}
+						Uri resultUri = UCrop.getOutput(intent);
+						Bitmap bitmap = null;
+						if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+							bitmap = BitmapFactory.decodeStream(contentResolver.openInputStream(resultUri));
+						} else {
+							ImageDecoder.Source source = ImageDecoder.createSource(contentResolver, resultUri);
+							bitmap = ImageDecoder.decodeBitmap(source);
+						}
+						currImageView.setBackground(null);
+						currImageView.setImageBitmap(bitmap);
+						if (images == null) {
+							images = new HashMap<>();
+						}
+						images.put(currImageTag, file.getAbsolutePath());
+					} catch (IOException e) {
+						Log.e(TAG, e.toString());
+					}
+				}
+		);
 
 		public SpotAdapter(Context context) {
 			this.context = context;
@@ -272,34 +308,14 @@ public class SpotDetailEditFragment extends Fragment {
 			holder.imageView.setImageBitmap(bitmap);
 		}
 
-		private void afterTakePicture(boolean isOk) {
-			if (!isOk) {
-				return;
+		public void crop() {
+			try {
+				cropPicLauncher.launch(UCrop.of(Uri.fromFile(file), Uri.fromFile(createImageFile()))
+						.withAspectRatio(4, 3)
+						.getIntent(activity));
+			} catch (IOException e) {
+				Log.d(TAG, e.toString());
 			}
-			Bitmap bitmap = null;
-			if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.P) {
-				bitmap = BitmapFactory.decodeFile(file.getPath());
-			} else {
-				try {
-					ImageDecoder.Source source = ImageDecoder.createSource(file);
-					bitmap = ImageDecoder.decodeBitmap(source);
-				} catch (IOException e) {
-					Log.e(TAG, e.toString());
-				}
-			}
-			currImageView.setBackground(null);
-			currImageView.setImageBitmap(bitmap);
-			if (images == null) {
-				images = new HashMap<>();
-			}
-			images.put(currImageTag, file.getAbsolutePath());
-		}
-
-		private File createImageFile() throws IOException {
-			String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-			String imageFileName = "JPEG_" + timeStamp + "_";
-			File storageDir = activity.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-			return File.createTempFile(imageFileName, ".jpg", storageDir);
 		}
 	}
 
@@ -318,5 +334,12 @@ public class SpotDetailEditFragment extends Fragment {
 				spot.setLng(lng);
 			}
 		});
+	}
+
+	private File createImageFile() throws IOException {
+		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+		String imageFileName = "JPEG_" + timeStamp + "_";
+		File storageDir = activity.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+		return File.createTempFile(imageFileName, ".jpg", storageDir);
 	}
 }

@@ -157,7 +157,6 @@ public class SpotDetailDisplayFragment extends Fragment {
 				toast.setView(imageView);
 				toast.setDuration(Toast.LENGTH_SHORT);
 				toast.show();
-
 			});
 		}
 	}
